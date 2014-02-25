@@ -1,0 +1,1642 @@
+<!DOCTYPE html>
+<head>
+  <meta charset="utf-8" />
+  <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+  <title>Testing Javascript</title>
+  
+  <link rel="stylesheet" href="reveal/css/reveal.min.css">
+  <link rel="stylesheet" href="reveal/lib/css/googlecode.css">
+
+  <link rel="stylesheet" href="slides-theme/style.css">
+  <link rel="stylesheet" href="slides-theme/talk-specific.css">
+</head>
+
+<body>
+
+  <div class="reveal">
+    <div class="slides">
+
+<section data-markdown><script type="text/template">
+# Testing Javascript
+
+Code: [github.com/timruffles/js-testing-class](https://github.com/timruffles/js-testing-class)
+
+[@timruffles](http://twitter.com/timruffles), [truffles.me.uk](http://truffles.me.uk)
+      
+</script></section>
+
+<section data-markdown ><script type="text/template">
+# Hello
+
+- [github.com/timruffles/js-testing-class](https://github.com/timruffles/js-testing-class)
+- Code + slides up above - clone if you've got `git`, or grab the `.zip`.
+
+- <p contenteditable class=wifi>WiFi: hubwestminster, HubWest1</p>
+
+</script></section>
+
+<section data-markdown data-state=title><script type="text/template">
+## Admission
+</script></section>
+
+<section data-markdown><script type="text/template">
+## My code is full of bugs
+</script></section>
+
+<section data-markdown><script type="text/template">
+## Yours probably is too
+</script></section>
+
+<section data-markdown><script type="text/template">
+## It's impossible to write correct code
+</script></section>
+
+<section data-markdown><script type="text/template">
+## ...even if it were possible, how would you know?
+</script></section>
+
+<section data-markdown><script type="text/template">
+> Even if, by chance,
+> they came upon the final truth,
+> they would not know it,
+> for all is but a woven web of guesses
+
+Xenophanes
+</script></section>
+
+<section data-markdown><script type="text/template">
+## Thought experiment
+</script></section>
+
+<section data-markdown><script type="text/template">
+## If you could write perfect code, would it be ok?
+</script></section>
+
+<section data-markdown><script type="text/template">
+## No
+</script></section>
+
+<section data-markdown><script type="text/template">
+## Other people exist
+</script></section>
+
+<section data-markdown><script type="text/template">
+## Other people (your colleagues) break your code
+</script></section>
+
+<section data-markdown><script type="text/template">
+## How do other engineers test?
+</script></section>
+
+<section data-markdown><script type="text/template">
+## Rigorously, expensively 
+</script></section>
+
+<section data-markdown><script type="text/template">
+## Bugs upset people: first do no evil
+</script></section>
+
+<section data-markdown><script type="text/template">
+![iron ring](img/iron-ring.jpg)
+</script></section>
+
+<section data-markdown><script type="text/template">
+## How hard/expensive are software tests?
+</script></section>
+
+<section data-markdown><script type="text/template">
+## Insanely cheap
+</script></section>
+
+<section data-markdown><script type="text/template">
+## Executable documentation
+</script></section>
+
+<section data-markdown data-state=title><script type="text/template">
+## It's not done without tests
+</script></section>
+
+<section data-markdown><script type="text/template">
+## So
+</script></section>
+
+<section data-markdown data-state=title><script type="text/template">
+## How do we test?
+</script></section>
+
+<section data-markdown><script type="text/template">
+```javascript
+function add(a,b) {
+}
+
+function testAdd() {
+  var result = add(1,1);
+  if(result != 2) throw new Error("fail");
+  result = add(1,2);
+  if(result != 3) throw new Error("fail");
+}
+
+testAdd();
+```
+</script></section>
+
+<section data-markdown><script type="text/template">
+## Problems
+
+- stops on first error
+- what failed?
+
+```javascript
+Error: fail
+```
+</script></section>
+
+<section data-markdown><script type="text/template">
+## Solution: a test runner!
+</script></section>
+
+<section data-markdown><script type="text/template">
+## Let's write a test runner
+
+```javascript
+function Suite() {
+  this.tests = [];
+}
+Suite.prototype.test = function(name,fn) {
+  this.tests.push({name: name, fn: fn});
+}
+Suite.prototype.run = function() {
+  this.tests.forEach(function(setup) {
+    try {
+      setup.fn();
+    } catch(e) {
+      console.error(setup.name + " FAILED!: " + e);
+    }
+  });
+}
+```
+</script></section>
+
+<section data-markdown><script type="text/template">
+## Let's use it
+
+```javascript
+function add(a,b) {
+}
+
+var addSuite = new Suite;
+addSuite.test("1+1",function() {
+  if(add(1,1) !== 2) throw new Error("fail");
+})
+addSuite.test("1+2",function() {
+  if(add(1,3) !== 4) throw new Error("fail");
+})
+
+addSuite.run();
+```
+</script></section>
+
+<section data-markdown><script type="text/template">
+## Real version
+
+- mocha (today), Jasmine
+- provide structure for naming tests
+- capture errors, tell you what worked/didn't
+</script></section>
+
+<section data-markdown><script type="text/template">
+## Let's try mocha
+
+### node 0.10.x
+
+```javascript
+npm install
+npm install mocha -g
+cd exercises/first-test
+mocha 
+```
+
+### Browser
+
+- open `exercises/first-test/index.html`
+
+</script></section>
+
+<section data-markdown><script type="text/template">
+## Problems
+
+- just says 'fail', why?
+
+```javascript
+1+2 FAILED!: Error: fail
+```
+- boilerplate
+
+```javascript
+addSuite.test("1+2",function() {
+  if(add(1,3) !== 4) throw new Error("fail");
+})
+```
+
+</script></section>
+
+<section data-markdown><script type="text/template">
+## Solution
+
+- write some assertions
+
+```javascript
+var addSuite = new Suite;
+addSuite.test("1+1",function() {
+  assertEqual(add(1,1),2);
+})
+addSuite.test("1+2",function() {
+  assertEqual(add(1,2),3);
+})
+
+addSuite.run();
+
+function assertEqual(a,b,msg) {
+  if(a !== b) {
+    throw new Error(
+      (msg || "") + " expected " + a + " to equal " + b
+    );
+  }
+}
+```
+</script></section>
+
+<section data-markdown><script type="text/template">
+## Real versions
+
+- chai.js (today)
+- referee
+- matchers: array equality, floats 'close enough'
+</script></section>
+
+<section data-markdown><script type="text/template">
+## Why use a real one?
+</script></section>
+
+<section data-markdown data-state=title><script type="text/template">
+## Pop quiz
+</script></section>
+
+<section data-markdown><script type="text/template">
+## Does this test pass?
+```javascript
+addSuite.test("adding floats",function() {
+  assertEqual(0.1 + 0.2,0.3);
+})
+```
+</script></section>
+
+<section data-markdown><script type="text/template">
+## Nope: floats :(
+
+- All JS numbers are [IEEE 754 Double Precision floats]()
+- 'cannot accurately represent decimal fractions, which is a big problem because humanity has been doing commerce in decimals for a long, long time' Crockford
+
+```javascript
+assert.closeTo(0.1 + 0.2,0.3,0.0000001);
+```
+
+</script></section>
+
+<section data-markdown><script type="text/template">
+## Always document test intent
+
+- debugging the below test: no fun
+
+```
+test("it works",function() {
+  if(getAnswer() != 5.3332559) throw new Error("didn't");
+})
+```
+</script></section>
+
+<section data-markdown><script type="text/template">
+## Let's use chai
+
+- `exercises/assertions`
+</script></section>
+
+<section data-markdown><script type="text/template">
+## More boilerplate
+
+```javascript
+addSuite.setup(function() {
+  // setup - shared between multiple assertions/tests
+  this.result = add(1,2);
+})
+addSuite.test("1+2",function() {
+  assertEqual(this.result,2);
+});
+addSuite.test("some other aspect",function() {
+  // other assertions/tests using same setup
+});
+```
+</script></section>
+
+<section data-markdown><script type="text/template">
+## Structure
+</script></section>
+
+
+<section data-markdown><script type="text/template">
+## Test structure
+
+- setup, teardown
+- setup: create environment or create and cache result
+- tests/assertions
+- tear-down, remove anything that'd bleed into other tests
+
+</script></section>
+
+<section data-markdown><script type="text/template">
+## Nesting
+
+- a flat structure often doesn't do enough
+- setup/teardown could be shared for a few different features
+
+</script></section>
+
+<section data-markdown><script type="text/template">
+## Real version
+
+- mocha
+
+```javascript
+describe("user login",function() {
+  var user;
+  before(function() {
+    user = Factory.user();
+  });
+  describe("with correct credentials",function() {
+    before(function() {
+      login(user.username,"pass");
+    });
+    it("creates session",function()  /* ... */ });
+    it("records login time",function()  /* ... */ });
+  });
+  describe("with incorrect credentials",function() {
+    before(function() {
+      login(user.username,"not pass");
+    });
+    it("increments failed logins",function()  /* ... */ });
+    it("responds with 403",function()  /* ... */ });
+  });
+});
+```
+
+</script></section>
+
+<section data-markdown><script type="text/template">
+## Let's read an example
+
+- Run node only
+- `exercise/setup-teardown`
+
+</script></section>
+
+<section data-markdown data-state=title><script type="text/template">
+## But what about TDD?
+</script></section>
+
+<section data-markdown><script type="text/template">
+## Test-driven-development
+</script></section>
+
+<section data-markdown><script type="text/template">
+## AKA write the tests before the code
+</script></section>
+
+<section data-markdown><script type="text/template">
+## First - what problems does it aim at?
+</script></section>
+
+<section data-markdown data-state=title><script type="text/template">
+## Test 0
+</script></section>
+
+<section data-markdown data-state=title><script type="text/template">
+## Can you test your code?
+</script></section>
+
+<section data-markdown ><script type="text/template">
+## Test 0: the result is interesting
+</script></section>
+
+<section data-markdown ><script type="text/template">
+## Sometimes, easily
+</script></section>
+
+<section data-markdown><script type="text/template">
+```javascript
+function sprintf(str) {
+  var params = [].slice.call(arguments,1)
+  var types = {
+    "%s": function(x) { return x + "" }
+  }
+  var matches = 0
+  return str.replace(/(%[is])/g,function(match) {
+    return types[match](params[matches++])
+  })
+}
+
+it("formats correctly",function() {
+  assert.equal("MU!",sprintf("%s","MU!"));
+})
+```
+</script></section>
+
+<section data-markdown ><script type="text/template">
+## Often this simple?
+</script></section>
+
+<section data-markdown ><script type="text/template">
+## Get real
+</script></section>
+
+<section data-markdown class=small-code ><script type="text/template">
+
+```javascript
+'generateResetToken': function (req, res) {
+    var email = req.body.email;
+
+    api.users.generateResetToken(email).then(function (token) {
+        var siteLink = '<a href="' + config().url + '">' + config().url + '</a>',
+            resetUrl = config().url.replace(/\/$/, '') +  '/ghost/reset/' + token + '/',
+            resetLink = '<a href="' + resetUrl + '">' + resetUrl + '</a>',
+            message = {
+                to: email,
+                subject: 'Reset Password',
+                html: '<p><strong>Hello!</strong></p>' +
+                      '<p>A request has been made to reset the password on the site ' + siteLink + '.</p>' +
+                      '<p>Please follow the link below to reset your password:<br><br>' + resetLink + '</p>' +
+                      '<p>Ghost</p>'
+            };
+
+        return mailer.send(message);
+    }).then(function success() {
+        var notification = {
+            type: 'success',
+            message: 'Check your email for further instructions',
+            status: 'passive',
+            id: 'successresetpw'
+        };
+
+        return api.notifications.add(notification).then(function () {
+            res.json(200, {redirect: config.paths().webroot + '/ghost/signin/'});
+        });
+
+    }, function failure(error) {
+        // TODO: This is kind of sketchy, depends on magic string error.message from Bookshelf.
+        // TODO: It's debatable whether we want to just tell the user we sent the email in this case or not, we are giving away sensitive info here.
+        if (error && error.message === 'EmptyResponse') {
+            error.message = "Invalid email address";
+        }
+
+        res.json(401, {error: error.message});
+    });
+},
+```
+
+</script></section>
+
+<section data-markdown ><script type="text/template">
+
+- nothing very asynchronous
+
+```javascript
+'generateResetToken': function (req, res) {
+    var email = req.body.email;
+  
+    api.users.generateResetToken(email).then(function (token) {
+        var siteLink = '<a href="' + config().url + '">' + config().url + '</a>',
+            resetUrl = config().url.replace(/\/$/, '') +  '/ghost/reset/' + token + '/',
+            resetLink = '<a href="' + resetUrl + '">' + resetUrl + '</a>',
+            message = {
+                to: email,
+                subject: 'Reset Password',
+                html: '<p><strong>Hello!</strong></p>' +
+                      '<p>A request has been made to reset the password on the site ' + siteLink + '.</p>' +
+                      '<p>Please follow the link below to reset your password:<br><br>' + resetLink + '</p>' +
+                      '<p>Ghost</p>'
+            };
+
+        return mailer.send(message);
+    }).then(function success() {
+      // ...
+    }, function failure(error) {
+      // ...
+    });
+},
+```
+
+</script></section>
+
+<section data-markdown ><script type="text/template">
+
+```javascript
+'generateResetToken': function (req, res) {
+    var email = req.body.email;
+
+    api.users.generateResetToken(email).then(function (token) {
+      // ...
+    }).then(function success() {
+      // ...
+    }, function failure(error) {
+        // TODO: This is kind of sketchy, depends on magic string error.message from Bookshelf.
+        // TODO: It's debatable whether we want to just tell the user we sent the email in this case or not, we are giving away sensitive info here.
+        if (error && error.message === 'EmptyResponse') {
+            error.message = "Invalid email address";
+        }
+
+        res.json(401, {error: error.message});
+    });
+},
+```
+
+</script></section>
+
+<section data-markdown ><script type="text/template">
+
+- here's a dependency
+
+```javascript
+'generateResetToken': function (req, res) {
+    var email = req.body.email;
+
+    api.users.generateResetToken(email).then(function (token) {
+      // ...
+    }).then(function success() {
+        var notification = {
+            type: 'success',
+            message: 'Check your email for further instructions',
+            status: 'passive',
+            id: 'successresetpw'
+        };
+
+        return api.notifications.add(notification).then(function () {
+            res.json(200, {redirect: config.paths().webroot + '/ghost/signin/'});
+        });
+    }, function failure(error) {
+      // ...
+    });
+},
+```
+
+</script></section>
+
+<section data-markdown ><script type="text/template">
+## If not, why?
+</script></section>
+
+<section data-markdown ><script type="text/template">
+## JS is easy to test
+</script></section>
+
+<section data-markdown ><script type="text/template">
+## If you KISS
+</script></section>
+
+<section data-markdown ><script type="text/template">
+```javascript
+'generateResetToken': function (req, res) {
+    var email = req.body.email;
+    api.users.generateResetToken(email).then(
+      api._sendMessage.bind(null,config,email)
+    ).then(
+      api._notifySuccess(res,{
+        type: 'success',
+        message: 'Check your email for further instructions',
+        status: 'passive',
+        id: 'successresetpw'
+      })
+      , api._handleFailure
+    );
+},
+
+```
+</script></section>
+
+<section data-markdown ><script type="text/template">
+## Unit tests need units
+</script></section>
+
+<section data-markdown ><script type="text/template">
+## Code can prevent tests
+</script></section>
+
+<section data-markdown ><script type="text/template">
+## Units have one job
+</script></section>
+
+<section data-markdown ><script type="text/template">
+## Isolate
+</script></section>
+
+<section data-markdown ><script type="text/template">
+## Testings driving modularity will be a theme
+</script></section>
+
+<section data-markdown ><script type="text/template">
+## until it's 'too easy'
+</script></section>
+
+<section data-markdown ><script type="text/template">
+## a) Visiblity
+</script></section>
+
+<section data-markdown ><script type="text/template">
+## Name and reveal
+</script></section>
+
+<section data-markdown ><script type="text/template">
+## Async makes processes clear
+</script></section>
+
+<section data-markdown ><script type="text/template">
+## b) Partials
+</script></section>
+
+<section data-markdown ><script type="text/template">
+## Partial
+
+- JS uses higher-order-functions
+- Functions that take or return functions
+- `x.bind()` creates a 'partially applied' version of `x`
+- First arg is JS's OO's fault
+
+```javascript
+var helloName = sprintf.bind(null,"Hello %s")
+helloName("Sue") // "Hello Sue"
+```
+</script></section>
+
+<section data-markdown ><script type="text/template">
+## Why?
+</script></section>
+
+<section data-markdown ><script type="text/template">
+## Steps with dependencies
+</script></section>
+
+<section data-markdown ><script type="text/template">
+```javascript
+'generateResetToken': function (req, res) {
+    var email = req.body.email;
+    api.users.generateResetToken(email).then(function (token) {
+      // ...
+      message = {
+          to: email,
+      // ...
+    }).then(function success() {
+
+    // ...
+```
+
+```javascript
+'generateResetToken': function (req, res) {
+    var email = req.body.email;
+    api.users.generateResetToken(email).then(
+      api._sendMessage.bind(null,config,email)
+    ).then(function success() {
+```
+```javascript
+_sendMessage: function(config,email,token) {
+  // ...
+}
+```
+</script></section>
+
+
+<section data-markdown ><script type="text/template">
+## Tests have taught us modularity
+</script></section>
+
+<section data-markdown data-state=title><script type="text/template">
+## Second problem TDD aims to solves
+</script></section>
+
+<section data-markdown data-state=title><script type="text/template">
+## False positives
+</script></section>
+
+<section data-markdown><script type="text/template">
+## Coincidence
+
+```javascript
+it("creates a user",function(done) {
+  app.post("/users",validUserAttrs)
+     .then(function() {
+       assert.equal(1,User.count())
+       done()
+     },done)
+})
+```
+</script></section>
+
+<section data-markdown><script type="text/template">
+## Still
+
+```javascript
+it("creates a user",function(done) {
+  assert.change(function(check) {
+    app.post("/users",validUserAttrs)
+       .then(function() {
+         check()
+         done()
+       },done)
+  },function() { return User.count() })
+})
+```
+</script></section>
+
+
+<section data-markdown><script type="text/template">
+## Again
+
+```javascript
+it("creates a user",function(done) {
+  assert.change(function(check) {
+    app.post("/users",validUserAttrs)
+       .then(function() {
+         check()
+         assert.equal(validUserAttrs.name,User.first().name)
+         done()
+       },done)
+  },function() { return User.count() })
+})
+```
+</script></section>
+
+
+<section data-markdown><script type="text/template">
+## Confident?
+
+```javascript
+it("creates a user",function(done) {
+  assert.change(function(check) {
+    app.post("/users",validUserAttrs)
+       .then(function() {
+         check()
+         assert.equal(validUserAttrs.name,User.first().name)
+         done()
+       },done)
+   },function() { return User.count() },{by: 1})
+})
+```
+</script></section>
+
+<section data-markdown><script type="text/template">
+## Creative/paranoid
+</script></section>
+
+
+<section data-markdown><script type="text/template">
+## Creative while writing code
+</script></section>
+
+<section data-markdown><script type="text/template">
+## Paranoid while writing tests
+</script></section>
+
+<section data-markdown><script type="text/template">
+## Paranoid mind
+
+- All code is broken, I just haven't found out how yet
+- I punish my code because I take the blame for it 
+- The errors will remain, so I must squeeze the places to hide
+
+<br />
+
+<p><cite>Learn C the Hard Way</cite>, Zed Shaw</p>
+
+</script></section>
+
+
+<section data-markdown><script type="text/template">
+## Edge-cases
+
+- Numbers: 0, Infinity, negative, irrational/rational
+- Collections: empty, one, many
+- Strings: empty?
+
+</script></section>
+
+<section data-markdown><script type="text/template">
+
+## How long is this string?
+
+```javascript
+var string = "   \t\t\t\t \n \n \t \t\t\t"
+while(string == false)
+  string += ["\t","\n"," "][Math.floor(Math.random() * 3)]
+```
+
+</script></section>
+
+<section data-markdown><script type="text/template">
+## Table-driven tests
+
+```javascript
+var possibleGitObjectNames = [
+  { name: "aeff938482", expected: git.SHA },
+  { name: "master", expected: git.REF },
+]
+
+possibleGitObjectNames.forEach(function(setup) {
+  it(util.format("correctly identifies '%s' as a '%s'",
+    setup.name,setup.expected),function() {
+    assert.equal(setup.expect,
+      git.identifyObjectNameType(setup.name))
+  })
+})
+
+var invalidObjectNames = [
+  "../",
+  "refs/heads/master",
+  "\t"
+]
+
+invalidObjectNames.forEach(function(name) {
+  it(util.format("identifies '%s' as an invalid object name",name),function() {
+    assert.throws(function() {
+      git.identifyObjectNameType(name)
+    })
+  })
+})
+```
+
+</script></section>
+
+
+<section data-markdown data-state=title><script type="text/template">
+## TDD has taught us humility
+</script></section>
+
+<section data-markdown data-state=title><script type="text/template">
+## So how do we do TDD?
+</script></section>
+
+<section data-markdown data-state=title><script type="text/template">
+## TDD is a loop
+</script></section>
+
+<section data-markdown><script type="text/template">
+## TDD
+
+```javascript
+while(features.length > 0) {
+  var feature = features.shift();
+  writeTest(feature);
+  while(!testPassing(feature)) {
+    writeCode(feature);
+  }
+  refactor(feature);
+}
+```
+</script></section>
+
+<section data-markdown data-state=title><script type="text/template">
+## Red, green, refactor
+</script></section>
+
+<section data-markdown><script type="text/template">
+## RGR
+
+- red: start with a failing test
+- get to green:
+- write smallest thing to fix one test
+- then, with the correctness enforced, make nice/fast
+</script></section>
+
+<section data-markdown><script type="text/template">
+## Optimising the loop
+
+- change watcher
+- keep editor and runner open
+- `mocha --watch`
+
+</script></section>
+
+<section data-markdown><script type="text/template">
+## Let's test drive something
+
+- `exercises/tdd`
+
+</script></section>
+
+<section data-markdown data-state=title><script type="text/template">
+## So is TDD mandatory?
+</script></section>
+
+<section data-markdown><script type="text/template">
+## I don't think so
+</script></section>
+
+<section data-markdown><script type="text/template">
+## TDD is means to an end
+
+- test 0: keeping code testable
+- avoiding false positives
+- driving code from requirements
+</script></section>
+
+<section data-markdown data-state=title><script type="text/template">
+## Ends can always be achieved many ways
+</script></section>
+
+<section data-markdown><script type="text/template">
+## TDD is great when
+
+- requirements are known
+- 'algorithmic' problem: parsing, formatting, transforming
+- covering lots of edge cases (e.g how can I make sure it does/doesn't do X?)
+</script></section>
+
+<section data-markdown><script type="text/template">
+## TDD doesn't help when
+
+- you're prototyping
+- you're trying out implementations (how does this look in code?)
+- you're making up requirements as you go (e.g you're 'customer' for code)
+</script></section>
+
+<section data-markdown><script type="text/template">
+## I suggest
+
+- trying strict TDD for a week
+- then using your judgement 
+</script></section>
+
+<section data-markdown data-state=title><script type="text/template">
+## But it's not BDD!
+</script></section>
+
+<section data-markdown ><script type="text/template">
+## Behaviour driven development
+
+- driven by business/user requirements
+- outside in (e.g people using WhatsApp don't care that it's XMPP)
+- user stories
+</script></section>
+
+<section data-markdown ><script type="text/template">
+## Focus on behaviour desired
+
+- Users should be able to login
+- If they use the wrong password, they see this message
+</script></section>
+
+<section data-markdown ><script type="text/template">
+## Outside in
+
+- Driven inwards from user's world to implementation
+- Because you don't have a server, you can't see the page
+- Because you don't have a form, you can't enter your username
+- Because you don't handle the POST, you can't display the error
+- Because you don't have a database, you can't get the password
+- Because you don't have a password system, you don't generate the error
+- Can now see password
+</script></section>
+
+<section data-markdown data-state=title><script type="text/template">
+## Focus on... syntax?
+</script></section>
+
+<section data-markdown ><script type="text/template">
+## RSpec's influence
+</script></section>
+
+<section data-markdown ><script type="text/template">
+## BDD syntax
+
+```javascript
+test("should format full name correctly",someTest);
+it("should format full name correctly",someTest);
+```
+```javascript
+test("should format full name correctly",function() {
+  assert.equal(user.fullName(),"Joe Bloggs");
+});
+it("should format full name correctly",function() {
+  expect(user.fullName()).toEqual("Joe Bloggs");
+});
+it("should format full name correctly",function() {
+  user.fullName().should.equal("Joe Bloggs");
+});
+```
+</script></section>
+
+<section data-markdown ><script type="text/template">
+## Syntax and BDD are two different things
+
+- one is outside in biz stories in your tests (syntax independent) 
+- other is just an alias for `test` and a longer winded `assert`
+</script></section>
+
+<section data-markdown ><script type="text/template">
+## Vanity of small differences
+
+```javascript
+test("#hostname",function() {
+  assert("example.com" === url.hostname)
+})
+test("#hostname",function() {
+  assert.equal("example.com",url.hostname)
+})
+test("provides access to hostname",function() {
+  assert.equal("example.com",url.hostname)
+})
+it("provides access to hostname",function() {
+  expect(url.hostname).to.equal("example.com")
+})
+it("provides access to hostname",function() {
+  url.hostname.should.equal("example.com")
+})
+```
+</script></section>
+
+<section>
+  <h2>Unfair? let's ask RSpec's author</h2>
+  <blockquote class="twitter-tweet" lang="en"><p>In 2005 I drunkenly released a dumb hack. It was called RSpec. You are victims on one of the biggest trolls ever committed. You’re welcome.</p>&mdash; Steven R. Baker (@srbaker) <a href="https://twitter.com/srbaker/statuses/345035925232955393">June 13, 2013</a></blockquote>
+  <blockquote class="twitter-tweet" data-conversation="none" lang="en"><p><a href="https://twitter.com/shinypb">@shinypb</a> I do BDD in Ruby with MiniTest. And I don’t use the RSpec syntax.</p>&mdash; Steven R. Baker (@srbaker) <a href="https://twitter.com/srbaker/statuses/345929631829987331">June 15, 2013</a></blockquote>
+
+<script async src="https://platform.twitter.com/widgets.js" charset="utf-8"></script>
+</section>
+
+<section data-markdown ><script type="text/template">
+## Halting problem
+
+- multiply by all languages and frameworks you use
+
+```javascript
+x.should.equal(y)
+x.should.be.equalTo(y)
+x.should.be.equal.to(y)
+expect(x).to.equal(y)
+expect(x).to.be.equalTo(y)
+expect(x).equals(y)
+```
+</script></section>
+
+<section data-markdown ><script type="text/template">
+## You can do BDD with any test framework
+</script></section>
+
+<section data-markdown ><script type="text/template">
+## My personal favourites
+
+- `it` and `describe`
+- plus `assert`
+- very readable and easy to make consistent across languages
+</script></section>
+
+<section data-markdown data-state=title><script type="text/template">
+## But it's not Cucumber!
+</script></section>
+
+<section data-markdown ><script type="text/template">
+```
+Given the URL '://example.com/links/?uri_id=cow'
+Then as a programmer
+I can access the hostname as 'example.com'
+```
+</script></section>
+
+<section data-markdown ><script type="text/template">
+## Writing tests in Regex!
+</script></section>
+
+<section data-markdown ><script type="text/template">
+## What problem does it solve?
+</script></section>
+
+<section data-markdown ><script type="text/template">
+## Avoiding translation errors between non-technical people and your tests
+</script></section>
+
+<section data-markdown ><script type="text/template">
+## Is that a problem you have?
+</script></section>
+
+<section data-markdown ><script type="text/template">
+## Cargo cult
+</script></section>
+
+
+<section data-markdown data-state=title><script type="text/template">
+## Okay, so we know how to TDD/BDD
+</script></section>
+
+<section data-markdown data-state=title><script type="text/template">
+## Are we done?
+</script></section>
+
+<section data-markdown data-state=title><script type="text/template">
+## That was just the easy stuff
+</script></section>
+
+<section data-markdown data-state=title><script type="text/template">
+## Hard stuff
+</script></section>
+
+<section data-markdown><script type="text/template">
+## Things that make tests hard
+
+- indeterminacy 
+- non-blocking code
+- slow processes
+- concurrency
+</script></section>
+
+<section data-markdown data-state=title><script type="text/template">
+## All have the same solution
+</script></section>
+
+<section data-markdown data-state=title><script type="text/template">
+## Isolate code dealing with the hard stuff and fake it
+</script></section>
+
+<section data-markdown><script type="text/template">
+## Test the hard stuff separately
+</script></section>
+
+<section data-markdown data-state=title><script type="text/template">
+## How?
+</script></section>
+
+<section data-markdown data-state=title><script type="text/template">
+## Mocks n stubs
+</script></section>
+
+<section data-markdown><script type="text/template">
+## Both fakes
+</script></section>
+
+<section data-markdown><script type="text/template">
+## Roll your own, or library: it's a role
+</script></section>
+
+<section data-markdown><script type="text/template">
+## Mocks: function voyeurism
+
+```javascript
+var getSpy = sinon.spy($,"get");
+$.get("http://example.com");
+assert.calledWithMatch("http://example.com");
+```
+</script></section>
+
+<section data-markdown><script type="text/template">
+## Mocks: asserting call behaviour
+</script></section>
+
+<section data-markdown><script type="text/template">
+## Stubs
+
+- replace dependencies of a unit
+
+```javascript
+function computeAnswer(cb) {
+  $.get("/answer",function(answer) {
+    cb(answer + 1);
+  });
+}
+
+sinon.stub($,"get").yields(42);
+
+computeAnswer(function(answer) {
+  assert.equals(result,43);
+});
+```
+</script></section>
+
+<section data-markdown><script type="text/template">
+## Edge cases: go manual
+
+```javascript
+try {
+  // more likely in before block
+  var original = $.get;
+  var gotUrl;
+  $.get = function(url) {
+    gotUrl = url;
+  }
+  $.get("http://expected.com");
+  assert.equal(gotUrl,"http://expected.com");
+} finally {
+  // more likely in after block
+  $.get = original;
+}
+```
+</script></section>
+
+<section data-markdown><script type="text/template">
+## Mocks are tests, stubs support tests
+</script></section>
+
+<section data-markdown><script type="text/template">
+## Both are fakes
+</script></section>
+
+<section data-markdown><script type="text/template">
+## But...
+</script></section>
+
+<section data-markdown><script type="text/template">
+## Don't always grab mocks/stubs
+</script></section>
+
+<section data-markdown><script type="text/template">
+## Inject instance dependencies
+
+- e.g database connection
+- if you're mocking HTTP in a view, probably doing it wrong
+- e.g pass model to view
+</script></section>
+
+<section data-markdown><script type="text/template">
+## Fragility
+
+- don't over stub/mock
+- if it's not slow/indeterminate, and it exists, use that
+</script></section>
+
+<section data-markdown data-state=title><script type="text/template">
+## What not to test
+</script></section>
+
+<section data-markdown ><script type="text/template">
+## Library code
+</script></section>
+
+<section data-markdown ><script type="text/template">
+## jQuery, ORM etc
+</script></section>
+
+<section data-markdown ><script type="text/template">
+## So stub?
+</script></section>
+
+<section data-markdown ><script type="text/template">
+## If necessary, prefer to wrap
+</script></section>
+
+<section data-markdown ><script type="text/template">
+## Let's use them
+
+- `exercises/mocks-stubs`
+</script></section>
+
+<section data-markdown data-state=title><script type="text/template">
+## When stubs aren't enough
+</script></section>
+
+<section data-markdown><script type="text/template">
+## Async
+
+- runner needs to be aware
+- different syntaxes: mocha's is among the simplest
+</script></section>
+
+<section data-markdown><script type="text/template">
+
+```javascript
+function mergeDocument(a,b,cb) {
+  var docA, docB;
+  Documents.get(a,function(err,a) {
+    if(err) return cb(err);
+    if(docB) return Documents.merge(a,docB,cb);
+    docA = a;
+  });
+  Documents.get(b,function(err,b) {
+    if(err) return cb(err);
+    if(docA) return Documents.merge(docA,b,cb);
+    docB = b;
+  });
+}
+it("merges docs",function(done) {
+  mergeDocument(1,2,function(err,merged) {
+    if(err) return done(err);
+    // asserts
+    done();
+  })
+});
+```
+</script></section>
+
+<section data-markdown data-state=title><script type="text/template">
+## Functional tests
+</script></section>
+
+<section data-markdown><script type="text/template">
+## The testing continuum
+
+- true unit tests: all (non-library) components stubbed/mocked
+- functional test: complete staging system, production scale
+- most are in the middle
+
+</script></section>
+
+<section data-markdown data-state=title><script type="text/template">
+## Frontend
+</script></section>
+
+<section data-markdown ><script type="text/template">
+## Bang for buck
+</script></section>
+
+<section data-markdown ><script type="text/template">
+## Real browsers
+</script></section>
+
+<section data-markdown ><script type="text/template">
+## Command line
+</script></section>
+
+<section data-markdown ><script type="text/template">
+## Karma
+</script></section>
+
+<section data-markdown ><script type="text/template">
+## Getting the kit
+
+```bash
+cd exercises/karma
+npm install
+karma start --auto-watch
+```
+
+```javascript
+module.exports = function(config) {
+  config.set({
+    frameworks: ['mocha','chai'],
+    browsers: ['Chrome', 'Firefox'],
+    files: [
+      'vendor/*.js',
+      'src/*.js',
+      'tests/*_test.js'
+    ],
+    client: {
+      mocha: {
+        ui: 'bdd'
+      }
+    }
+  });
+};
+```
+</script></section>
+
+
+<section data-markdown ><script type="text/template">
+## Hello Karma
+
+```javascript
+describe("karma testing",function() {
+
+  it("is clearly in the browser, I'm parsing URLs" +
+    "with an anchor tag",function() {
+    var urlStr = "http://example.com"
+    var url = parseUrl(urlStr) 
+    assert.equal(url.hostname,"example.com")
+  })
+
+})
+
+function parseUrl(str) {
+  if(!parseUrl.parser)
+    parseUrl.parser = document.createElement("a")
+  parseUrl.parser.href = str
+  return ["hostname","protocol","path"].reduce(function(h,k) {
+    h[k] = parseUrl.parser[k]
+    return h
+  },{})
+}
+```
+</script></section>
+
+
+
+<section data-markdown ><script type="text/template">
+## Hello widget
+
+```javascript
+describe("annoying cookie widget",function() {
+  it("can be commanded to leave by the user",function() {
+    var widget = new AnnoyingCookie
+    var cares = true
+    widget.ondoesnotcare = function() {
+      cares = false
+    }
+    widget.render()
+    $(widget.el).find(".does_not_care").click()
+    assert.isFalse(cares,"user unable to dismiss " +
+      " stupid cookie warning")
+  })
+})
+```
+</script></section>
+
+<section data-markdown data-state=title><script type="text/template">
+## Backend
+</script></section>
+
+<section data-markdown><script type="text/template">
+
+## APIs
+
+```javascript
+var app = require("../app.js")
+var request = require("supertest")
+
+describe("math server 1.1",function() {
+  describe("addition",function() {
+    it("can add",function(done) {
+      request(app)
+        .get('/add/10/15')
+        .expect(/answer/)
+        .expect(/:\s*25/)
+        .expect(200,done)
+    })
+    // I wonder if we should test other types of numbers?
+    // are there edge cases for numbers at all?
+    it("validates numbers",function(done) {
+      request(app)
+        .get('/add/spoon/15')
+        .expect(/error/)
+        .expect(400,done)
+    })
+  })
+})
+```
+</script></section>
+
+<section data-markdown><script type="text/template">
+
+## Databases
+
+- stub, or...
+- 2 options
+</script></section>
+
+<section data-markdown><script type="text/template">
+
+## Fixtures
+
+- known DB state
+- returned to after each test
+- depends on DB - e.g for ACID, via transactions
+
+</script></section>
+
+<section data-markdown><script type="text/template">
+
+## Factories
+
+- create records on fly per test
+- use named factories to create standard records
+
+</script></section>
+
+<section data-markdown><script type="text/template">
+
+## Fixtures v Factories
+
+- Fixtures: fast
+- Factories: flexible
+- Could always use both
+
+```
+describe("100 /user api calls",function() {
+  var user;
+  beforeEach(function() {
+    // slooooooooow - could use a fixture for this user instead
+    user = Factory.user();
+  });
+});
+```
+
+
+</script></section>
+
+<section data-markdown data-state=title><script type="text/template">
+## We've tested the lot
+</script></section>
+
+<section data-markdown data-state=title><script type="text/template">
+## But... who runs the tests?
+</script></section>
+
+<section data-markdown data-state=title><script type="text/template">
+## Anything not automated will be missed
+</script></section>
+
+<section data-markdown data-state=title><script type="text/template">
+## Build server
+</script></section>
+
+<section data-markdown><script type="text/template">
+## Jenkins
+
+- other CI (continous integration) servers are available
+- on git push, pulls, and runs tests
+</script></section>
+
+<section data-markdown data-state=title><script type="text/template">
+## assert(lesson.done);
+</script></section>
+
+<section data-markdown data-state=title><script type="text/template">
+## GO FORTH AND TEST!
+</script></section>
+
+<section data-markdown ><script type="text/template">
+## Any other questions?
+
+### [@timruffles](http://twitter.com/timruffles)
+</script></section>
+
+<section data-markdown ><script type="text/template">
+
+## Creative commons work
+
+
+</script></section>
+
+
+</div>
+</div>
+
+<!-- reveal -->
+<script src="reveal/lib/js/head.min.js"></script>
+<script src="reveal/js/reveal.min.js"></script>
+<script>
+  Reveal.initialize({
+
+    // Display controls in the bottom right corner
+    controls: false,
+
+    // Display a presentation progress bar
+    progress: true,
+
+    // Push each slide change to the browser history
+    history: true,
+
+    // Enable keyboard shortcuts for navigation
+    keyboard: true,
+
+    // Enable the slide overview mode
+    overview: true,
+
+    // Vertical centering of slides
+    center: false,
+
+    // Loop the presentation
+    loop: false,
+
+    // Change the presentation direction to be RTL
+    rtl: false,
+
+    // Number of milliseconds between automatically proceeding to the
+    // next slide, disabled when set to 0, this value can be overwritten
+    // by using a data-autoslide attribute on your slides
+    autoSlide: 0,
+
+    // Enable slide navigation via mouse wheel
+    mouseWheel: false,
+
+    // Apply a 3D roll to links on hover
+    rollingLinks: false,
+
+    // Transition style
+    transition: 'linear', // default/cube/page/concave/zoom/linear/fade/none
+
+    dependencies: [
+        // Cross-browser shim that fully implements classList - https://github.com/eligrey/classList.js/
+        { src: 'reveal/lib/js/classList.js', condition: function() { return !document.body.classList; } },
+
+        // Interreveal/pret Markdown in <section> elements
+    { src: 'reveal/plugin/markdown/marked.js', condition: function() { return !!document.querySelector( '[data-markdown]' ); } },
+            { src: 'reveal/plugin/markdown/markdown.js', condition: function() { return !!document.querySelector( '[data-markdown]' ); } },
+
+        // Syntareveal/x highlight for <code> elements
+          { src: 'reveal/plugin/highlight/highlight.js', async: true, callback: function() { hljs.initHighlightingOnLoad(); } },
+
+          // Zoom reveal/in and out with Alt+click
+          { src: 'reveal/plugin/zoom-js/zoom.js', async: true, condition: function() { return !!document.body.classList; } },
+
+          // Speakreveal/er notes
+          { src: 'reveal/plugin/notes/notes.js', async: true, condition: function() { return !!document.body.classList; } },
+
+          // Remotreveal/e control your reveal.js presentation using a touch device
+          // { src: 'reveal/plugin/remotes/remotes.js', async: true, condition: function() { return !!document.body.classList; } }
+          ]
+
+          });
+    </script>
+</body>
+

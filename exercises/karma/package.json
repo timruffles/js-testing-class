@@ -1,0 +1,12 @@
+{
+  "name": "test-skeleton",
+  "version": "0.0.1",
+  "devDependencies": {
+    "karma-mocha": "~> 0.1.0",
+    "karma-chrome-launcher": "~> 0.1.0"
+  },
+  "dependencies": {
+    "karma-mocha": "~0.1.1",
+    "karma": "~0.10.9"
+  }
+}

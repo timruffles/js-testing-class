@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html ng-app=exercise>
+    <head>
+        <meta charset="utf-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge">
+        <title>Test Suite</title>
+        <meta name="description" content="">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+
+        <link href="../../vendor/mocha/mocha.css" rel="stylesheet">
+
+    </head>
+    <body>
+
+        <div id=mocha></div>
+
+
+        <!-- TEST LIBRARIES -->
+        <script src="../../vendor/mocha/mocha.js"></script>
+        <script>mocha.setup('bdd');</script>
+        <script src="../../vendor/chai.js"></script>
+        <script>var assert = chai.assert;</script>
+        <script src="../../vendor/sinon.js"></script>
+        <script>sinon.assert.expose(assert,{prefix: ""});</script>
+
+
+        <script>
+        // quick hack to allow same test to work in browser/node
+        var require = function() {
+          console.error("Remove any 'require' calls in your browser testing code - just to allow either testing style for an exercise");
+          return app;
+        };
+        </script>
+        <!-- YOUR CODE + DEPS -->
+        <script src="main.js"></script>
+
+        <!-- YOUR TESTS -->
+        <script src="test/main-test.js"></script>
+
+        <!-- KICK OFF TESTS -->
+        <script src="run-tests.js"></script>
+    </body>
+</html>
