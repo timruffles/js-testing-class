@@ -117,7 +117,7 @@ Xenophanes
 </script></section>
 
 <section data-markdown><script type="text/template">
-## So
+## So...
 </script></section>
 
 <section data-markdown data-state=title><script type="text/template">
@@ -353,13 +353,6 @@ addSuite.test("some other aspect",function() {
 
 </script></section>
 
-<section data-markdown><script type="text/template">
-## Nesting
-
-- a flat structure often doesn't do enough
-- setup/teardown could be shared for a few different features
-
-</script></section>
 
 <section data-markdown><script type="text/template">
 ## Real version
@@ -367,35 +360,27 @@ addSuite.test("some other aspect",function() {
 - mocha
 
 ```javascript
-describe("user login",function() {
+suite"user login",function() {
   var user;
-  before(function() {
+  setup(function() {
     user = Factory.user();
   });
-  describe("with correct credentials",function() {
-    before(function() {
+  suite"with correct credentials",function() {
+    setup(function() {
       login(user.username,"pass");
     });
-    it("creates session",function()  /* ... */ });
-    it("records login time",function()  /* ... */ });
+    test("creates session",function()  /* ... */ });
+    test("records login time",function()  /* ... */ });
   });
-  describe("with incorrect credentials",function() {
-    before(function() {
+  suite"with incorrect credentials",function() {
+    setup(function() {
       login(user.username,"not pass");
     });
-    it("increments failed logins",function()  /* ... */ });
-    it("responds with 403",function()  /* ... */ });
+    test("increments failed logins",function()  /* ... */ });
+    test("responds with 403",function()  /* ... */ });
   });
 });
 ```
-
-</script></section>
-
-<section data-markdown><script type="text/template">
-## Let's read an example
-
-- Run node only
-- `exercise/setup-teardown`
 
 </script></section>
 
@@ -1012,6 +997,19 @@ while(features.length > 0) {
 </script></section>
 
 <section data-markdown ><script type="text/template">
+## BDD syntax aids good test names
+
+- `suite` -> `describe`
+- `test` -> `it`
+
+```javascript
+describe("User",function() {
+  it("should format full name correctly",someTest);
+})
+```
+</script></section>
+
+<section data-markdown ><script type="text/template">
 ## BDD syntax
 
 ```javascript
@@ -1093,6 +1091,22 @@ expect(x).equals(y)
 - `it` and `describe`
 - plus `assert`
 - very readable and easy to make consistent across languages
+</script></section>
+
+<section data-markdown><script type="text/template">
+## Win: nesting
+
+- a flat structure often doesn't do enough
+- setup/teardown could be shared for a few different features
+
+</script></section>
+
+<section data-markdown><script type="text/template">
+## Let's read an example
+
+- Run node only
+- `exercise/setup-teardown`
+
 </script></section>
 
 <section data-markdown data-state=title><script type="text/template">
@@ -1441,6 +1455,17 @@ describe("annoying cookie widget",function() {
 ```
 </script></section>
 
+<section data-markdown ><script type="text/template">
+## Let's try it
+
+```bash
+cd exercises/karma
+npm install
+npm install -g karma 
+karma start --auto-watch
+```
+</script></section>
+
 <section data-markdown data-state=title><script type="text/template">
 ## Backend
 </script></section>
@@ -1559,14 +1584,6 @@ describe("100 /user api calls",function() {
 
 ### [@timruffles](http://twitter.com/timruffles)
 </script></section>
-
-<section data-markdown ><script type="text/template">
-
-## Creative commons work
-
-
-</script></section>
-
 
 </div>
 </div>
