@@ -162,34 +162,7 @@ mocha
 
 
 <section data-markdown data-state=title><script type="text/template">
-## Document intent
-</script></section>
-
-<!-- TODO rewrite this section -->
-
-<section data-markdown><script type="text/template">
-## Pop quiz
-</script></section>
-
-<section data-markdown><script type="text/template">
-## Does this test pass?
-```javascript
-addSuite.test("adding floats",function() {
-  assertEqual(0.1 + 0.2,0.3);
-})
-```
-</script></section>
-
-<section data-markdown><script type="text/template">
-## Nope: floats :(
-
-- All JS numbers are [IEEE 754 Double Precision floats]()
-- 'cannot accurately represent decimal fractions, which is a big problem because humanity has been doing commerce in decimals for a long, long time' Crockford
-
-```javascript
-assert.closeTo(0.1 + 0.2,0.3,0.0000001);
-```
-
+## Assertions document intent
 </script></section>
 
 <section data-markdown><script type="text/template">
@@ -202,6 +175,14 @@ test("it works",function() {
   if(getAnswer() != 5.3332559) throw new Error("didn't");
 })
 ```
+</script></section>
+
+
+<section data-markdown><script type="text/template">
+## DRY tests: custom assertions
+
+- all assertion libraries should be able to add custom assertions
+- wrap up repeated patterns of assertions with an intention revealing custom assert
 </script></section>
 
 
@@ -252,6 +233,15 @@ suite"user login",function() {
   });
 });
 ```
+
+</script></section>
+
+<section data-markdown><script type="text/template">
+## Nesting
+
+- lots of tests are 'sub-types'
+- mocha allows for nested `describe` and `suite` functions
+- `before` and `beforeEach` scoped to correct level
 
 </script></section>
 
@@ -670,11 +660,20 @@ _sendMessage: function(config,email,token) {
 
 
 <section data-markdown ><script type="text/template">
+## How to pass Test 0
+
+- modularity: no global state
+- inject all run-time dependencies
+- reveal units from asynchronous processes
+- don't mix 'compute something' and 'do something' code
+</script></section>
+
+<section data-markdown ><script type="text/template">
 ## Tests have taught us modularity
 </script></section>
 
 <section data-markdown data-state=title><script type="text/template">
-## Second problem TDD aims to solves
+## Paranoid tests allow creative coding
 </script></section>
 
 <section data-markdown data-state=title><script type="text/template">
@@ -1211,6 +1210,12 @@ it("merges docs",function(done) {
   })
 });
 ```
+</script></section>
+
+<section data-markdown ><script type="text/template">
+## Let's use them
+
+- `exercises/async`
 </script></section>
 
 <section data-markdown data-state=title><script type="text/template">
