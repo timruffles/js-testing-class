@@ -35,33 +35,13 @@ Code: [github.com/timruffles/js-testing-class](https://github.com/timruffles/js-
 
 </script></section>
 
-<section data-markdown data-state=title><script type="text/template">
-## Admission
-</script></section>
-
-<section data-markdown><script type="text/template">
-## My code is full of bugs
-</script></section>
-
-<section data-markdown><script type="text/template">
-## Yours probably is too
-</script></section>
 
 <section data-markdown><script type="text/template">
 ## It's impossible to write correct code
 </script></section>
 
 <section data-markdown><script type="text/template">
-## ...even if it were possible, how would you know?
-</script></section>
-
-<section data-markdown><script type="text/template">
-> Even if, by chance,
-> they came upon the final truth,
-> they would not know it,
-> for all is but a woven web of guesses
-
-Xenophanes
+## ...but it's possible to write better code
 </script></section>
 
 <section data-markdown><script type="text/template">
@@ -125,83 +105,40 @@ Xenophanes
 </script></section>
 
 <section data-markdown><script type="text/template">
-```javascript
-function add(a,b) {
-}
-
-function testAdd() {
-  var result = add(1,1);
-  if(result != 2) throw new Error("fail");
-  result = add(1,2);
-  if(result != 3) throw new Error("fail");
-}
-
-testAdd();
-```
+## We need
 </script></section>
 
 <section data-markdown><script type="text/template">
-## Problems
-
-- stops on first error
-- what failed?
-
-```javascript
-Error: fail
-```
+## To be able to load code into test environment
 </script></section>
 
 <section data-markdown><script type="text/template">
-## Solution: a test runner!
+## Make assertions about what will/has happened
 </script></section>
 
 <section data-markdown><script type="text/template">
-## Let's write a test runner
-
-```javascript
-function Suite() {
-  this.tests = [];
-}
-Suite.prototype.test = function(name,fn) {
-  this.tests.push({name: name, fn: fn});
-}
-Suite.prototype.run = function() {
-  this.tests.forEach(function(setup) {
-    try {
-      setup.fn();
-    } catch(e) {
-      console.error(setup.name + " FAILED!: " + e);
-    }
-  });
-}
-```
+## Run the tests
 </script></section>
 
 <section data-markdown><script type="text/template">
-## Let's use it
-
-```javascript
-function add(a,b) {
-}
-
-var addSuite = new Suite;
-addSuite.test("1+1",function() {
-  if(add(1,1) !== 2) throw new Error("fail");
-})
-addSuite.test("1+2",function() {
-  if(add(1,3) !== 4) throw new Error("fail");
-})
-
-addSuite.run();
-```
+## Know what failed and why
 </script></section>
 
 <section data-markdown><script type="text/template">
-## Real version
+## Requirements
 
-- mocha (today), Jasmine
-- provide structure for naming tests
-- capture errors, tell you what worked/didn't
+- load code for testing into test environment
+- assert
+- run
+- capture output
+</script></section>
+
+<section data-markdown><script type="text/template">
+## Our tools today
+
+- environment: Karma (all browsers), or node
+- assert: chai
+- run/capture output: mocha
 </script></section>
 
 <section data-markdown><script type="text/template">
@@ -210,8 +147,9 @@ addSuite.run();
 ### node 0.10.x
 
 ```javascript
+// download & run install from nodejs.org
 npm install
-npm install mocha -g
+npm install -g mocha
 cd exercises/first-test
 mocha 
 ```
@@ -222,63 +160,14 @@ mocha
 
 </script></section>
 
-<section data-markdown><script type="text/template">
-## Problems
-
-- just says 'fail', why?
-
-```javascript
-1+2 FAILED!: Error: fail
-```
-- boilerplate
-
-```javascript
-addSuite.test("1+2",function() {
-  if(add(1,3) !== 4) throw new Error("fail");
-})
-```
-
-</script></section>
-
-<section data-markdown><script type="text/template">
-## Solution
-
-- write some assertions
-
-```javascript
-var addSuite = new Suite;
-addSuite.test("1+1",function() {
-  assertEqual(add(1,1),2);
-})
-addSuite.test("1+2",function() {
-  assertEqual(add(1,2),3);
-})
-
-addSuite.run();
-
-function assertEqual(a,b,msg) {
-  if(a !== b) {
-    throw new Error(
-      (msg || "") + " expected " + a + " to equal " + b
-    );
-  }
-}
-```
-</script></section>
-
-<section data-markdown><script type="text/template">
-## Real versions
-
-- chai.js (today)
-- referee
-- matchers: array equality, floats 'close enough'
-</script></section>
-
-<section data-markdown><script type="text/template">
-## Why use a real one?
-</script></section>
 
 <section data-markdown data-state=title><script type="text/template">
+## Document intent
+</script></section>
+
+<!-- TODO rewrite this section -->
+
+<section data-markdown><script type="text/template">
 ## Pop quiz
 </script></section>
 
@@ -315,6 +204,7 @@ test("it works",function() {
 ```
 </script></section>
 
+
 <section data-markdown><script type="text/template">
 ## Let's use chai
 
@@ -322,26 +212,8 @@ test("it works",function() {
 </script></section>
 
 <section data-markdown><script type="text/template">
-## More boilerplate
-
-```javascript
-addSuite.setup(function() {
-  // setup - shared between multiple assertions/tests
-  this.result = add(1,2);
-})
-addSuite.test("1+2",function() {
-  assertEqual(this.result,2);
-});
-addSuite.test("some other aspect",function() {
-  // other assertions/tests using same setup
-});
-```
-</script></section>
-
-<section data-markdown><script type="text/template">
 ## Structure
 </script></section>
-
 
 <section data-markdown><script type="text/template">
 ## Test structure
@@ -352,7 +224,6 @@ addSuite.test("some other aspect",function() {
 - tear-down, remove anything that'd bleed into other tests
 
 </script></section>
-
 
 <section data-markdown><script type="text/template">
 ## Real version
@@ -396,8 +267,109 @@ suite"user login",function() {
 ## AKA write the tests before the code
 </script></section>
 
+
+
+
+<section data-markdown data-state=title><script type="text/template">
+## TDD is a loop
+</script></section>
+
 <section data-markdown><script type="text/template">
-## First - what problems does it aim at?
+## TDD
+
+```javascript
+while(features.length > 0) {
+  var feature = features.shift();
+  writeTest(feature);
+  while(!testPassing(feature)) {
+    writeCode(feature);
+  }
+  refactor(feature);
+}
+```
+</script></section>
+
+<section data-markdown data-state=title><script type="text/template">
+## Red, green, refactor
+</script></section>
+
+<section data-markdown><script type="text/template">
+## RGR
+
+- red: start with a failing test
+- get to green:
+- write smallest thing to fix one test
+- then, with the correctness enforced, make nice/fast
+</script></section>
+
+<section data-markdown><script type="text/template">
+## Optimising the loop
+
+- change watcher
+- keep editor and runner open
+- `mocha --watch`
+
+</script></section>
+
+<section data-markdown><script type="text/template">
+## Let's test drive something
+
+- `exercises/tdd`
+
+</script></section>
+
+<section data-markdown data-state=title><script type="text/template">
+## So is TDD mandatory?
+</script></section>
+
+<section data-markdown><script type="text/template">
+## I don't think so
+</script></section>
+
+<section data-markdown><script type="text/template">
+## TDD is means to an end
+
+- test 0: keeping code testable
+- avoiding false positives
+- driving code from requirements
+</script></section>
+
+<section data-markdown data-state=title><script type="text/template">
+## Ends can always be achieved many ways
+</script></section>
+
+<section data-markdown><script type="text/template">
+## TDD is great when
+
+- requirements are known
+- 'algorithmic' problem: parsing, formatting, transforming
+- covering lots of edge cases (e.g how can I make sure it does/doesn't do X?)
+</script></section>
+
+<section data-markdown><script type="text/template">
+## TDD doesn't help when
+
+- you're prototyping
+- you're trying out implementations (how does this look in code?)
+- you're making up requirements as you go (e.g you're 'customer' for code)
+</script></section>
+
+<section data-markdown><script type="text/template">
+## I suggest
+
+- trying strict TDD for a week
+- then using your judgement 
+</script></section>
+
+<section data-markdown data-state=title><script type="text/template">
+## Writing good tests is the hard part
+</script></section>
+
+<section data-markdown><script type="text/template">
+## Two ideas
+
+- Test 0: tests inform design
+- Paranoid testing enabled creative coding
 </script></section>
 
 <section data-markdown data-state=title><script type="text/template">
@@ -857,106 +829,6 @@ invalidObjectNames.forEach(function(name) {
 
 </script></section>
 
-
-<section data-markdown data-state=title><script type="text/template">
-## TDD has taught us humility
-</script></section>
-
-<section data-markdown data-state=title><script type="text/template">
-## So how do we do TDD?
-</script></section>
-
-<section data-markdown data-state=title><script type="text/template">
-## TDD is a loop
-</script></section>
-
-<section data-markdown><script type="text/template">
-## TDD
-
-```javascript
-while(features.length > 0) {
-  var feature = features.shift();
-  writeTest(feature);
-  while(!testPassing(feature)) {
-    writeCode(feature);
-  }
-  refactor(feature);
-}
-```
-</script></section>
-
-<section data-markdown data-state=title><script type="text/template">
-## Red, green, refactor
-</script></section>
-
-<section data-markdown><script type="text/template">
-## RGR
-
-- red: start with a failing test
-- get to green:
-- write smallest thing to fix one test
-- then, with the correctness enforced, make nice/fast
-</script></section>
-
-<section data-markdown><script type="text/template">
-## Optimising the loop
-
-- change watcher
-- keep editor and runner open
-- `mocha --watch`
-
-</script></section>
-
-<section data-markdown><script type="text/template">
-## Let's test drive something
-
-- `exercises/tdd`
-
-</script></section>
-
-<section data-markdown data-state=title><script type="text/template">
-## So is TDD mandatory?
-</script></section>
-
-<section data-markdown><script type="text/template">
-## I don't think so
-</script></section>
-
-<section data-markdown><script type="text/template">
-## TDD is means to an end
-
-- test 0: keeping code testable
-- avoiding false positives
-- driving code from requirements
-</script></section>
-
-<section data-markdown data-state=title><script type="text/template">
-## Ends can always be achieved many ways
-</script></section>
-
-<section data-markdown><script type="text/template">
-## TDD is great when
-
-- requirements are known
-- 'algorithmic' problem: parsing, formatting, transforming
-- covering lots of edge cases (e.g how can I make sure it does/doesn't do X?)
-</script></section>
-
-<section data-markdown><script type="text/template">
-## TDD doesn't help when
-
-- you're prototyping
-- you're trying out implementations (how does this look in code?)
-- you're making up requirements as you go (e.g you're 'customer' for code)
-</script></section>
-
-<section data-markdown><script type="text/template">
-## I suggest
-
-- trying strict TDD for a week
-- then using your judgement 
-</script></section>
-
 <section data-markdown data-state=title><script type="text/template">
 ## But it's not BDD!
 </script></section>
@@ -1036,28 +908,6 @@ it("should format full name correctly",function() {
 - other is just an alias for `test` and a longer winded `assert`
 </script></section>
 
-<section data-markdown ><script type="text/template">
-## Vanity of small differences
-
-```javascript
-test("#hostname",function() {
-  assert("example.com" === url.hostname)
-})
-test("#hostname",function() {
-  assert.equal("example.com",url.hostname)
-})
-test("provides access to hostname",function() {
-  assert.equal("example.com",url.hostname)
-})
-it("provides access to hostname",function() {
-  expect(url.hostname).to.equal("example.com")
-})
-it("provides access to hostname",function() {
-  url.hostname.should.equal("example.com")
-})
-```
-</script></section>
-
 <section>
   <h2>Unfair? let's ask RSpec's author</h2>
   <blockquote class="twitter-tweet" lang="en"><p>In 2005 I drunkenly released a dumb hack. It was called RSpec. You are victims on one of the biggest trolls ever committed. You’re welcome.</p>&mdash; Steven R. Baker (@srbaker) <a href="https://twitter.com/srbaker/statuses/345035925232955393">June 13, 2013</a></blockquote>
@@ -1067,29 +917,14 @@ it("provides access to hostname",function() {
 </section>
 
 <section data-markdown ><script type="text/template">
-## Halting problem
-
-- multiply by all languages and frameworks you use
-
-```javascript
-x.should.equal(y)
-x.should.be.equalTo(y)
-x.should.be.equal.to(y)
-expect(x).to.equal(y)
-expect(x).to.be.equalTo(y)
-expect(x).equals(y)
-```
-</script></section>
-
-<section data-markdown ><script type="text/template">
 ## You can do BDD with any test framework
 </script></section>
 
 <section data-markdown ><script type="text/template">
 ## My personal favourites
 
-- `it` and `describe`
-- plus `assert`
+- `it` and `describe` (bdd suite structure)
+- plus `assert` (old school assertions)
 - very readable and easy to make consistent across languages
 </script></section>
 
@@ -1579,8 +1414,6 @@ describe("100 /user api calls",function() {
   });
 });
 ```
-
-
 </script></section>
 
 <section data-markdown data-state=title><script type="text/template">
@@ -1604,6 +1437,30 @@ describe("100 /user api calls",function() {
 
 - other CI (continuous integration) servers are available
 - on git push, pulls, and runs tests
+</script></section>
+
+<section data-markdown><script type="text/template">
+## JSHint
+
+- good as a git pre-commit hook
+- write a bash script in `.git/hooks/pre-push`
+</script></section>
+
+<section data-markdown data-state=title><script type="text/template">
+## Time to build something
+</script></section>
+
+<section data-markdown><script type="text/template">
+## ...TDD style!
+</script></section>
+
+<section data-markdown><script type="text/template">
+## Test repo
+
+- `http://github.com/timruffles/tdd-demo`
+- rebuilding a reddit frontend/api - git history has whole TDD loop
+- checkout `no-implementation` branch
+
 </script></section>
 
 <section data-markdown data-state=title><script type="text/template">
